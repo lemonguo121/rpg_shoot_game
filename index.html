@@ -142,7 +142,7 @@
                         spawnBoss.call(this);
                         this.allEnemiesDefeated = true;
                     }
-                    this.gameLevelText.setText(`第${this.level}关 第${this.wave}波   v1.0.0`);
+                    this.gameLevelText.setText(`第${this.level}关 第${this.wave}波   v1.0.1`);
                 },
                 loop: true
             });
@@ -219,7 +219,7 @@
                 player.xpToNext *= 2;
                 player.maxHealth += 20;
                 player.health = player.maxHealth;
-                player.attack += 2;
+                player.attack += 1;
 
                 const levelUpText = scene.add.text(360, 640, '升级！', {
                     fontSize: '32px',
@@ -318,11 +318,11 @@
         function spawnMonsterWave() {
             if (this.waveNumber === 1 && this.level > 1) {
                 // 新关卡第1波，加5
-                this.currentHpBase += 5;
+                this.currentHpBase += 10;
                 baseHp = this.currentHpBase;
             } else if (this.waveNumber > 1) {
                 // 同一关后续波，加2
-                this.currentHpBase += 2;
+                this.currentHpBase += 5;
                 baseHp = this.currentHpBase;
             }
     
