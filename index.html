@@ -313,9 +313,19 @@
 
             this.statusText.setText(`HP:${player.health}/${player.maxHealth}   AP:${player.attack}`);
         }
-
+        this.currentHpBase = 10;
+        let baseHp = this.currentHpBase;
         function spawnMonsterWave() {
-            const baseHp = 10 + (this.waveNumber - 1) * 2 + (this.level - 1) * 5;
+            if (this.waveNumber === 1 && this.level > 1) {
+                // 新关卡第1波，加5
+                this.currentHpBase += 5;
+                baseHp = this.currentHpBase;
+            } else if (this.waveNumber > 1) {
+                // 同一关后续波，加2
+                this.currentHpBase += 2;
+                baseHp = this.currentHpBase;
+            }
+    
             this.monsterHp = baseHp; // 记录给其它地方用
             this.monsterXpValue = this.level * 5 + this.waveNumber;
 
@@ -325,18 +335,18 @@
                 switch (edge) {
                     case 0: // 上边
                         x = Phaser.Math.Between(0, 720);
-                        y = -50;
+                        y = -5;
                         break;
                     case 1: // 下边
                         x = Phaser.Math.Between(0, 800);
-                        y = 1300;
+                        y = 1285;
                         break;
                     case 2: // 左边
-                        x = -50;
+                        x = -5;
                         y = Phaser.Math.Between(0, 1280);
                         break;
                     case 3: // 右边
-                        x = 850;
+                        x = 805;
                         y = Phaser.Math.Between(0, 1280);
                         break;
                 }
@@ -355,8 +365,8 @@
         }
 
         function spawnBoss() {
-            const boss = bosses.create(Phaser.Math.Between(0, 800), -100, 'boss');
-            boss.hp = 200 + this.level * 50;
+            const boss = bosses.create(Phaser.Math.Between(0, 750), -100, 'boss');
+            boss.hp = this.currentHpBase*10;
             this.bossXpValue = this.level * 10 + this.waveNumber;
         }
 
@@ -381,11 +391,9 @@
 
             this.time.delayedCall(2000, () => {
                 text.destroy();
-                this.level++;  // 升级
                 this.wave = 0;
                 this.waveNumber = 0;
                 this.allEnemiesDefeated = false;
-                player.health = player.maxHealth; // 血量恢复
             });
         }
     </script>
