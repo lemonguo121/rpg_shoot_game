@@ -84,7 +84,7 @@
                 player.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
             });
 
-            player = this.physics.add.sprite(400, 300, 'player');
+            player = this.physics.add.sprite(360, 640, 'player');
             player.setCollideWorldBounds(true);
             player.health = 100;
             player.maxHealth = 100;
@@ -240,7 +240,7 @@
             const width = 200;
             const height = 20;
             const x = 10;
-            const y = 10;
+            const y = 0;
 
             scene.healthBarBg.clear();
             scene.healthBarBg.fillStyle(0x444444, 1);
@@ -256,7 +256,7 @@
             const width = 200;
             const height = 10;
             const x = 10;
-            const y = 35;
+            const y = 25;
 
             scene.xpBarBg.clear();
             scene.xpBarBg.fillStyle(0x444444, 1);
@@ -324,20 +324,20 @@
                 const edge = Phaser.Math.Between(0, 3);
                 switch (edge) {
                     case 0: // 上边
-                        x = Phaser.Math.Between(0, 800);
+                        x = Phaser.Math.Between(0, 720);
                         y = -50;
                         break;
                     case 1: // 下边
                         x = Phaser.Math.Between(0, 800);
-                        y = 650;
+                        y = 1300;
                         break;
                     case 2: // 左边
                         x = -50;
-                        y = Phaser.Math.Between(0, 600);
+                        y = Phaser.Math.Between(0, 1280);
                         break;
                     case 3: // 右边
                         x = 850;
-                        y = Phaser.Math.Between(0, 600);
+                        y = Phaser.Math.Between(0, 1280);
                         break;
                 }
 
