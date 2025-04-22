@@ -2,395 +2,393 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <title>突突突突</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
     <style>
         body {
-     margin: 0;
-        padding: 0;
-        overflow: hidden;
-        height: 100%;
-        background: black;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: black;
         }
 
         canvas {
-             display: block;
-        width: 100vw;
-        height: 100vh;
+            display: block;
         }
     </style>
 </head>
 
 <body>
-<script>
-    const config = {
-        type: Phaser.AUTO,
-        width: 800,
-        height: 600,
-        physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { y: 0 },
-                debug: false
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 720,
+            height: 1280,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload,
+                create,
+                update
+            },
+            scale: {
+                mode: Phaser.Scale.FIT, // 保持比例缩放
+                autoCenter: Phaser.Scale.CENTER_BOTH // 自动居中
             }
-        },
-        scene: {
-            preload,
-            create,
-            update
-        },
-        scale: {
-        mode: Phaser.Scale.FIT, // 保持比例缩放
-        autoCenter: Phaser.Scale.CENTER_BOTH // 自动居中
-    }
-    };
+        };
 
-    let player;
-    let cursors;
-    let monsters;
-    let bullets;
-    let bosses;
-    let touchStart = null;
-    const game = new Phaser.Game(config);
+        let player;
+        let cursors;
+        let monsters;
+        let bullets;
+        let bosses;
+        let touchStart = null;
+        const game = new Phaser.Game(config);
 
-    function preload() {
-        this.load.image('player', 'assets/player.png');
-        this.load.image('monster', 'assets/monster.png');
-        this.load.image('boss', 'assets/boss.png');
-        this.load.image('bullet', 'assets/bullet.png');
-    }
+        function preload() {
+            this.load.image('player', 'assets/player.png');
+            this.load.image('monster', 'assets/monster.png');
+            this.load.image('boss', 'assets/boss.png');
+            this.load.image('bullet', 'assets/bullet.png');
+        }
 
-    function create() {
+        function create() {
 
-        this.input.on('pointerdown', (pointer) => {
-            touchStart = { x: pointer.x, y: pointer.y };
-        });
+            this.input.on('pointerdown', (pointer) => {
+                touchStart = { x: pointer.x, y: pointer.y };
+            });
 
-        this.input.on('pointerup', (pointer) => {
-            touchStart = null;
-        });
+            this.input.on('pointerup', (pointer) => {
+                touchStart = null;
+            });
 
-        this.input.on('pointermove', (pointer) => {
-            if (!touchStart) return;
+            this.input.on('pointermove', (pointer) => {
+                if (!touchStart) return;
 
-            const dx = pointer.x - touchStart.x;
-            const dy = pointer.y - touchStart.y;
+                const dx = pointer.x - touchStart.x;
+                const dy = pointer.y - touchStart.y;
 
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 10) return; // 忽略轻微移动
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 10) return; // 忽略轻微移动
 
-            const angle = Math.atan2(dy, dx);
-            const speed = 200;
+                const angle = Math.atan2(dy, dx);
+                const speed = 200;
 
-            player.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
-        });
+                player.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+            });
 
-        player = this.physics.add.sprite(400, 300, 'player');
-        player.setCollideWorldBounds(true);
-        player.health = 100;
-        player.maxHealth = 100;
-        player.attack = 10;
-        player.level = 1;
-        player.xp = 0;
-        player.xpToNext = 10;
-        player.score = 0;
+            player = this.physics.add.sprite(400, 300, 'player');
+            player.setCollideWorldBounds(true);
+            player.health = 100;
+            player.maxHealth = 100;
+            player.attack = 10;
+            player.level = 1;
+            player.xp = 0;
+            player.xpToNext = 10;
+            player.score = 0;
 
-        this.wave = 0;
-        this.waveNumber = 0; // ✅ 添加
-        this.level = 1;       // ✅ 添加
-        this.maxWaves = 10;
-        this.monstersPerWave = 20;
-        this.allEnemiesDefeated = false;
+            this.wave = 0;
+            this.waveNumber = 0; // ✅ 添加
+            this.level = 1;       // ✅ 添加
+            this.maxWaves = 10;
+            this.monstersPerWave = 20;
+            this.allEnemiesDefeated = false;
 
-        this.statusText = this.add.text(220, 10, '', { fontSize: '14px', fill: '#fff' });
-        this.levelText = this.add.text(220, 30, 'LV: 1 XP: 0/10 Score: 0', {
-            fontSize: '14px',
-            fill: '#fff'
-        }).setScrollFactor(0);
-        this.statusText = this.add.text(220, 10, '', { fontSize: '14px', fill: '#fff' });
-        this.gameLevelText = this.add.text(300, 60, '第一关:第一波', { fontSize: '16px', fill: '#fff' });
+            this.statusText = this.add.text(220, 10, '', { fontSize: '14px', fill: '#fff' });
+            this.levelText = this.add.text(220, 30, 'LV: 1 XP: 0/10 Score: 0', {
+                fontSize: '14px',
+                fill: '#fff'
+            }).setScrollFactor(0);
+            this.statusText = this.add.text(220, 10, '', { fontSize: '14px', fill: '#fff' });
+            this.gameLevelText = this.add.text(300, 60, '第一关:第一波', { fontSize: '16px', fill: '#fff' });
 
 
-        // 血量条背景和前景
-        this.healthBarBg = this.add.graphics();
-        this.healthBar = this.add.graphics();
+            // 血量条背景和前景
+            this.healthBarBg = this.add.graphics();
+            this.healthBar = this.add.graphics();
 
-        // 经验条背景和前景
-        this.xpBarBg = this.add.graphics();
-        this.xpBar = this.add.graphics();
-        cursors = this.input.keyboard.createCursorKeys();
+            // 经验条背景和前景
+            this.xpBarBg = this.add.graphics();
+            this.xpBar = this.add.graphics();
+            cursors = this.input.keyboard.createCursorKeys();
 
-        bullets = this.physics.add.group({
-            classType: Phaser.Physics.Arcade.Image,
-            runChildUpdate: true
-        });
+            bullets = this.physics.add.group({
+                classType: Phaser.Physics.Arcade.Image,
+                runChildUpdate: true
+            });
 
 
-        monsters = this.physics.add.group();
-        bosses = this.physics.add.group();
+            monsters = this.physics.add.group();
+            bosses = this.physics.add.group();
 
 
 
-        // 波次怪物刷新
-        this.time.addEvent({
-            delay: 10000,
-            callback: () => {
-                if (this.wave < this.maxWaves) {
-                    spawnMonsterWave.call(this);
-                    this.wave++;
-                    this.waveNumber++;
-                } else if (bosses.getLength() === 0 && !this.allEnemiesDefeated) {
-                    spawnBoss.call(this);
-                    this.allEnemiesDefeated = true;
+            // 波次怪物刷新
+            this.time.addEvent({
+                delay: 10000,
+                callback: () => {
+                    if (this.wave < this.maxWaves) {
+                        spawnMonsterWave.call(this);
+                        this.wave++;
+                        this.waveNumber++;
+                    } else if (bosses.getLength() === 0 && !this.allEnemiesDefeated) {
+                        spawnBoss.call(this);
+                        this.allEnemiesDefeated = true;
+                    }
+                    this.gameLevelText.setText(`第${this.level}关 第${this.wave}波`);
+                },
+                loop: true
+            });
+
+            // 子弹发射
+            this.time.addEvent({
+                delay: 300,
+                callback: () => {
+                    const target = getClosestEnemy(player, monsters.getChildren().concat(bosses.getChildren()));
+                    if (target) {
+                        const bullet = bullets.create(player.x, player.y, 'bullet');
+                        this.physics.moveToObject(bullet, target, 400);
+                        bullet.setCollideWorldBounds(true);
+                        bullet.body.onWorldBounds = true;
+                        bullet.setCollideWorldBounds(true);
+                        bullet.body.onWorldBounds = true;
+                        // 子弹飞出边界就销毁
+                        bullet.body.world.on('worldbounds', function (body) {
+                            if (body.gameObject === bullet) {
+                                bullet.destroy();
+                            }
+                        });
+                    }
+                },
+                loop: true
+            });
+
+
+            // 子弹碰撞怪物
+            this.physics.add.overlap(bullets, monsters, (bullet, monster) => {
+                bullet.destroy();
+                let hp = monster.getData('hp') || 0;
+                hp -= player.attack;
+
+                if (hp <= 0) {
+                    monster.destroy();
+                    gainXP(this.monsterXpValue, this);
+                } else {
+                    monster.setData('hp', hp);
                 }
-                this.gameLevelText.setText(`第${this.level}关 第${this.wave}波`);
-            },
-            loop: true
-        });
+            });
 
-        // 子弹发射
-        this.time.addEvent({
-            delay: 300,
-            callback: () => {
-                const target = getClosestEnemy(player, monsters.getChildren().concat(bosses.getChildren()));
-                if (target) {
-                    const bullet = bullets.create(player.x, player.y, 'bullet');
-                    this.physics.moveToObject(bullet, target, 400);
-                    bullet.setCollideWorldBounds(true);
-                    bullet.body.onWorldBounds = true;
-                    bullet.setCollideWorldBounds(true);
-                    bullet.body.onWorldBounds = true;
-                    // 子弹飞出边界就销毁
-                    bullet.body.world.on('worldbounds', function (body) {
-                        if (body.gameObject === bullet) {
-                            bullet.destroy();
-                        }
-                    });
+            // 子弹碰撞boss
+            this.physics.add.overlap(bullets, bosses, (bullet, boss) => {
+                bullet.destroy();
+                boss.hp -= player.attack;
+                if (boss.hp <= 0) {
+                    boss.destroy();
+                    gainXP(this.bossXpValue, this); // Boss经验
                 }
-            },
-            loop: true
-        });
+            });
 
-
-        // 子弹碰撞怪物
-        this.physics.add.overlap(bullets, monsters, (bullet, monster) => {
-            bullet.destroy();
-            let hp = monster.getData('hp') || 0;
-            hp -= player.attack;
-
-            if (hp <= 0) {
+            this.physics.add.overlap(player, monsters, (playerObj, monster) => {
                 monster.destroy();
-                gainXP(this.monsterXpValue, this);
-            } else {
-                monster.setData('hp', hp);
-            }
-        });
+                player.health -= 10;
+                checkPlayerDead.call(this);
+            });
 
-        // 子弹碰撞boss
-        this.physics.add.overlap(bullets, bosses, (bullet, boss) => {
-            bullet.destroy();
-            boss.hp -= player.attack;
-            if (boss.hp <= 0) {
+            this.physics.add.overlap(player, bosses, (playerObj, boss) => {
                 boss.destroy();
-                gainXP(this.bossXpValue, this); // Boss经验
+                player.health -= 30;
+                checkPlayerDead.call(this);
+            });
+        }
+
+
+        function gainXP(amount, scene) {
+            player.xp += amount;
+            player.score += amount;
+
+            if (player.xp >= player.xpToNext) {
+                player.level++;
+                player.xp -= player.xpToNext;
+                player.xpToNext *= 2;
+                player.maxHealth += 20;
+                player.health = player.maxHealth;
+                player.attack += 2;
+
+                const levelUpText = scene.add.text(360, 640, '升级！', {
+                    fontSize: '32px',
+                    fill: '#0f0'
+                }).setOrigin(0.5);
+
+                // 2秒后销毁文字
+                scene.time.delayedCall(800, () => {
+                    levelUpText.destroy();
+                });
+
             }
-        });
 
-        this.physics.add.overlap(player, monsters, (playerObj, monster) => {
-            monster.destroy();
-            player.health -= 10;
-            checkPlayerDead.call(this);
-        });
+            scene.levelText.setText(`LV: ${player.level}  XP: ${player.xp}/${player.xpToNext}  Score: ${player.score}`);
+        }
 
-        this.physics.add.overlap(player, bosses, (playerObj, boss) => {
-            boss.destroy();
-            player.health -= 30;
-            checkPlayerDead.call(this);
-        });
-    }
+        function drawHealthBar(scene) {
+            const width = 200;
+            const height = 20;
+            const x = 10;
+            const y = 10;
 
+            scene.healthBarBg.clear();
+            scene.healthBarBg.fillStyle(0x444444, 1);
+            scene.healthBarBg.fillRect(x, y, width, height);
 
-    function gainXP(amount, scene) {
-        player.xp += amount;
-        player.score += amount;
+            const hpRatio = player.health / player.maxHealth;
+            scene.healthBar.clear();
+            scene.healthBar.fillStyle(0xff0000, 1);
+            scene.healthBar.fillRect(x, y, width * hpRatio, height);
+        }
 
-        if (player.xp >= player.xpToNext) {
-            player.level++;
-            player.xp -= player.xpToNext;
-            player.xpToNext *= 2;
-            player.maxHealth += 20;
-            player.health = player.maxHealth;
-            player.attack += 2;
+        function drawXpBar(scene) {
+            const width = 200;
+            const height = 10;
+            const x = 10;
+            const y = 35;
 
-            const levelUpText = scene.add.text(400, 300, '升级！', {
+            scene.xpBarBg.clear();
+            scene.xpBarBg.fillStyle(0x444444, 1);
+            scene.xpBarBg.fillRect(x, y, width, height);
+
+            const xpRatio = player.xp / player.xpToNext;
+            scene.xpBar.clear();
+            scene.xpBar.fillStyle(0x00ffff, 1);
+            scene.xpBar.fillRect(x, y, width * xpRatio, height);
+        }
+
+        function checkPlayerDead() {
+            if (player.health <= 0) {
+                this.physics.pause();
+                player.setTint(0xff0000);
+                this.add.text(400, 300, '你死了！', {
+                    fontSize: '32px',
+                    fill: '#f00'
+                }).setOrigin(0.5);
+                this.add.text(400, 350, '点击重新开始', { fontSize: '20px', fill: '#fff' }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
+                    this.scene.restart();
+                });
+            }
+        }
+
+        function update() {
+            const speed = 200;
+            player.setVelocity(0);
+            if (!this.input.pointer1.isDown) {
+                player.setVelocity(0, 0);
+            }
+            if (cursors.left.isDown) player.setVelocityX(-speed);
+            if (cursors.right.isDown) player.setVelocityX(speed);
+            if (cursors.up.isDown) player.setVelocityY(-speed);
+            if (cursors.down.isDown) player.setVelocityY(speed);
+
+            // 怪物自动朝玩家靠近
+            monsters.getChildren().forEach(monster => {
+                this.physics.moveToObject(monster, player, 100);
+            });
+
+            // Boss 自动移动
+            bosses.getChildren().forEach(boss => {
+                this.physics.moveToObject(boss, player, 80);
+            });
+
+            // 检查通关条件
+            if (this.allEnemiesDefeated && monsters.countActive(true) === 0 && bosses.countActive(true) === 0) {
+                this.allEnemiesDefeated = false;
+                showLevelClear.call(this);
+            }
+            drawHealthBar(this);
+            drawXpBar(this);
+
+            this.statusText.setText(`HP:${player.health}/${player.maxHealth}   AP:${player.attack}`);
+        }
+
+        function spawnMonsterWave() {
+            const baseHp = 10 + (this.waveNumber - 1) * 2 + (this.level - 1) * 5;
+            this.monsterHp = baseHp; // 记录给其它地方用
+            this.monsterXpValue = this.level * 5 + this.waveNumber;
+
+            for (let i = 0; i < this.monstersPerWave; i++) {
+                let x, y;
+                const edge = Phaser.Math.Between(0, 3);
+                switch (edge) {
+                    case 0: // 上边
+                        x = Phaser.Math.Between(0, 800);
+                        y = -50;
+                        break;
+                    case 1: // 下边
+                        x = Phaser.Math.Between(0, 800);
+                        y = 650;
+                        break;
+                    case 2: // 左边
+                        x = -50;
+                        y = Phaser.Math.Between(0, 600);
+                        break;
+                    case 3: // 右边
+                        x = 850;
+                        y = Phaser.Math.Between(0, 600);
+                        break;
+                }
+
+                const monster = monsters.create(x, y, 'monster');
+
+                // ✅ 设置血量（推荐用 setData）
+                monster.setData('hp', baseHp);
+
+                // ✅ 设置物理属性
+                monster.setCollideWorldBounds(true);
+
+                // ✅ 怪物向角色移动（假设你有 player 对象）
+                this.physics.moveToObject(monster, player, 60); // 速度可以调整
+            }
+        }
+
+        function spawnBoss() {
+            const boss = bosses.create(Phaser.Math.Between(0, 800), -100, 'boss');
+            boss.hp = 200 + this.level * 50;
+            this.bossXpValue = this.level * 10 + this.waveNumber;
+        }
+
+        function getClosestEnemy(player, enemies) {
+            let closest = null;
+            let minDistance = Infinity;
+            enemies.forEach((enemy) => {
+                const distance = Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = enemy;
+                }
+            });
+            return closest;
+        }
+
+        function showLevelClear() {
+            const text = this.add.text(400, 300, '通关！准备下一关...', {
                 fontSize: '32px',
                 fill: '#0f0'
             }).setOrigin(0.5);
 
-            // 2秒后销毁文字
-            scene.time.delayedCall(800, () => {
-                levelUpText.destroy();
-            });
-
-        }
-
-        scene.levelText.setText(`LV: ${player.level}  XP: ${player.xp}/${player.xpToNext}  Score: ${player.score}`);
-    }
-
-    function drawHealthBar(scene) {
-        const width = 200;
-        const height = 20;
-        const x = 10;
-        const y = 10;
-
-        scene.healthBarBg.clear();
-        scene.healthBarBg.fillStyle(0x444444, 1);
-        scene.healthBarBg.fillRect(x, y, width, height);
-
-        const hpRatio = player.health / player.maxHealth;
-        scene.healthBar.clear();
-        scene.healthBar.fillStyle(0xff0000, 1);
-        scene.healthBar.fillRect(x, y, width * hpRatio, height);
-    }
-
-    function drawXpBar(scene) {
-        const width = 200;
-        const height = 10;
-        const x = 10;
-        const y = 35;
-
-        scene.xpBarBg.clear();
-        scene.xpBarBg.fillStyle(0x444444, 1);
-        scene.xpBarBg.fillRect(x, y, width, height);
-
-        const xpRatio = player.xp / player.xpToNext;
-        scene.xpBar.clear();
-        scene.xpBar.fillStyle(0x00ffff, 1);
-        scene.xpBar.fillRect(x, y, width * xpRatio, height);
-    }
-
-    function checkPlayerDead() {
-        if (player.health <= 0) {
-            this.physics.pause();
-            player.setTint(0xff0000);
-            this.add.text(400, 300, '你死了！', {
-                fontSize: '32px',
-                fill: '#f00'
-            }).setOrigin(0.5);
-            this.add.text(400, 350, '点击重新开始', { fontSize: '20px', fill: '#fff' }).setOrigin(0.5).setInteractive().on('pointerdown', () => {
-                this.scene.restart();
+            this.time.delayedCall(2000, () => {
+                text.destroy();
+                this.level++;  // 升级
+                this.wave = 0;
+                this.waveNumber = 0;
+                this.allEnemiesDefeated = false;
+                player.health = player.maxHealth; // 血量恢复
             });
         }
-    }
-
-    function update() {
-        const speed = 200;
-        player.setVelocity(0);
-        if (!this.input.pointer1.isDown) {
-            player.setVelocity(0, 0);
-        }
-        if (cursors.left.isDown) player.setVelocityX(-speed);
-        if (cursors.right.isDown) player.setVelocityX(speed);
-        if (cursors.up.isDown) player.setVelocityY(-speed);
-        if (cursors.down.isDown) player.setVelocityY(speed);
-
-        // 怪物自动朝玩家靠近
-        monsters.getChildren().forEach(monster => {
-            this.physics.moveToObject(monster, player, 100);
-        });
-
-        // Boss 自动移动
-        bosses.getChildren().forEach(boss => {
-            this.physics.moveToObject(boss, player, 80);
-        });
-
-        // 检查通关条件
-        if (this.allEnemiesDefeated && monsters.countActive(true) === 0 && bosses.countActive(true) === 0) {
-            this.allEnemiesDefeated = false;
-            showLevelClear.call(this);
-        }
-        drawHealthBar(this);
-        drawXpBar(this);
-
-        this.statusText.setText(`HP:${player.health}/${player.maxHealth}   AP:${player.attack}`);
-    }
-
-    function spawnMonsterWave() {
-        const baseHp = 10 + (this.waveNumber - 1) * 2 + (this.level - 1) * 5;
-        this.monsterHp = baseHp; // 记录给其它地方用
-        this.monsterXpValue = this.level * 5 + this.waveNumber;
-
-        for (let i = 0; i < this.monstersPerWave; i++) {
-            let x, y;
-            const edge = Phaser.Math.Between(0, 3);
-            switch (edge) {
-                case 0: // 上边
-                    x = Phaser.Math.Between(0, 800);
-                    y = -50;
-                    break;
-                case 1: // 下边
-                    x = Phaser.Math.Between(0, 800);
-                    y = 650;
-                    break;
-                case 2: // 左边
-                    x = -50;
-                    y = Phaser.Math.Between(0, 600);
-                    break;
-                case 3: // 右边
-                    x = 850;
-                    y = Phaser.Math.Between(0, 600);
-                    break;
-            }
-
-            const monster = monsters.create(x, y, 'monster');
-
-            // ✅ 设置血量（推荐用 setData）
-            monster.setData('hp', baseHp);
-
-            // ✅ 设置物理属性
-            monster.setCollideWorldBounds(true);
-
-            // ✅ 怪物向角色移动（假设你有 player 对象）
-            this.physics.moveToObject(monster, player, 60); // 速度可以调整
-        }
-    }
-
-    function spawnBoss() {
-        const boss = bosses.create(Phaser.Math.Between(0, 800), -100, 'boss');
-        boss.hp = 200 + this.level * 50;
-        this.bossXpValue = this.level * 10 + this.waveNumber;
-    }
-
-    function getClosestEnemy(player, enemies) {
-        let closest = null;
-        let minDistance = Infinity;
-        enemies.forEach((enemy) => {
-            const distance = Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closest = enemy;
-            }
-        });
-        return closest;
-    }
-
-    function showLevelClear() {
-        const text = this.add.text(400, 300, '通关！准备下一关...', {
-            fontSize: '32px',
-            fill: '#0f0'
-        }).setOrigin(0.5);
-
-        this.time.delayedCall(2000, () => {
-            text.destroy();
-            this.level++;  // 升级
-            this.wave = 0;
-            this.waveNumber = 0;
-            this.allEnemiesDefeated = false;
-            player.health = player.maxHealth; // 血量恢复
-        });
-    }
-</script>
+    </script>
 </body>
 
 </html>
