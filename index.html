@@ -39,7 +39,11 @@
             preload,
             create,
             update
-        }
+        },
+        scale: {
+        mode: Phaser.Scale.FIT, // 保持比例缩放
+        autoCenter: Phaser.Scale.CENTER_BOTH // 自动居中
+    }
     };
 
     let player;
